@@ -1,3 +1,5 @@
+import numpy as np
+
 a = ["apple", "orange", "watermelon", "strawberry", "melon", "eggplant", "flower"]
 
 
@@ -37,8 +39,6 @@ i = a[-3:-6:-1]
 
 # print(a)
 
-
-import numpy as np
 
 aa = np.array([[1, 2, 3, 4], [2, 2, 56, 7]])
 

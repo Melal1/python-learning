@@ -1,0 +1,11 @@
+from . import QtCore as QtCore
+from . import QtGui as QtGui
+from . import QtWidgets as QtWidgets
+from . import QtPrintSupport as QtPrintSupport
+from . import QtSql as QtSql
+from . import QtNetwork as QtNetwork
+from . import QtXml as QtXml
+from . import QtSvg as QtSvg
+from . import QtOpenGL as QtOpenGL
+from . import QtTest as QtTest
+from . import QtMultimedia as QtMultimedia

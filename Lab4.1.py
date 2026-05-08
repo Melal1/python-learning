@@ -1,5 +1,4 @@
 # Image Processing
-import cv2
 
 # TODO: Step 1 - Read an image
 

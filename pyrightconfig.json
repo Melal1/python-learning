@@ -1,0 +1,9 @@
+{
+  "stubPath": "./typings",
+  "venvPath": ".",
+  "venv": ".venv",
+  "reportMissingTypeStubs": "none",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "extraPaths": ["/nix/store/akjc94wvrxggk3ka0w1zygs5apfv6p3r-python3-3.13.9-env/lib/python3.13/site-packages", "/home/melal/Dev/UNI/python-learning/.venv/lib/python3.13/site-packages"]
+}
