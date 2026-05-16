@@ -34,5 +34,4 @@ plt.subplot(2, 2, 4)
 plt.imshow(cv2.cvtColor(raw_image_no_green, cv2.COLOR_BGR2RGB))
 plt.title("No Green Channel")
 
-plt.tight_layout()
 plt.show()

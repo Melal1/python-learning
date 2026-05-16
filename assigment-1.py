@@ -63,7 +63,7 @@ class ImageProcessorApp(QMainWindow):
         self._init_ui()
 
     def _init_ui(self):
-        self.setWindowTitle("K-Means Image Indexer")
+        self.setWindowTitle("Multimedia assigment")
         self.setMinimumWidth(500)
 
         central_widget = QWidget()

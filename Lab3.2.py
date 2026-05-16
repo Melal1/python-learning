@@ -1,49 +1,30 @@
-import cv2
+# Convert to CMY color space
 import matplotlib.pyplot as plt
-import numpy
+import cv2
 
-img_path: str = "./knighP_1.png"
+# TODO: Read an RGB Image
+image= None
 
-img_BGR = cv2.imread(img_path)
+# TODO: Get the image in CMY color system
+cmy_image = None
 
-if img_BGR is None:
-    exit()
-
-img_RGB = cv2.cvtColor(img_BGR, cv2.COLOR_BGR2RGB)
-
-img_CMY = 255 - img_RGB
-
-c, m, y = cv2.split(img_CMY)
+c, m, y = cv2.split(cmy_image)
 
 plt.figure(figsize=(12, 4))
+plt.subplot(1, 4, 1)
+plt.imshow(image[:, :, ::-1])
+plt.title('Original Image')
 
-plt.subplot(2, 2, 1)
-plt.imshow(c, cmap="Blues")
-plt.title("Cyan")
+plt.subplot(1, 4, 2)
+plt.imshow(c, cmap='Blues')
+plt.title('Cyan Component')
 
+plt.subplot(1, 4, 3)
+plt.imshow(m, cmap='Purples')
+plt.title('Magenta Component')
 
-plt.subplot(2, 2, 2)
-plt.imshow(m, cmap="Purples")
-plt.title("Magenta")
+plt.subplot(1, 4, 4)
+plt.imshow(y, cmap='YlOrBr')
+plt.title('Yellow Component')
 
-plt.subplot(2, 2, 3)
-plt.imshow(y, cmap="YlOrBr")
-
-plt.title("Yellow")
-img_4x1_list = [
-    [[0, 0, 255], [255, 255, 255]],
-    [[0, 255, 0], [255, 255, 255]],
-    [[255, 0, 0], [255, 255, 255]],
-    [[0, 0, 0], [255, 255, 255]],
-]
-
-
-img_4x1 = numpy.array(img_4x1_list)
-
-plt.subplot(2, 2, 4)
-plt.imshow(img_4x1[:, :, ::-1])
-plt.title("Image")
-
-plt.show()
-
-# https://gemini.google.com/share/2098b41a9bac
+# TODO: show the plot

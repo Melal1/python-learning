@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plot
 import numpy as np
 
-x = [1, 100]
-y = [1, 10]
+x = [1, 3, 100]
+y = [1, 4, 10]
 
 plot.plot(x, y)
 plot.title("Linear")
