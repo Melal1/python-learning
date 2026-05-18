@@ -52,6 +52,7 @@ class Editor(QMainWindow):
         self._mode: Modes = Modes.fill
         self._cv_img: Optional[np.ndarray] = None
         self._cv_img_croped_dim: Optional[np.ndarray] = None
+        self._crop_coords: Optional[Tuple[int, int, int, int]] = None
         self._history: List[
             List[Tuple[int, int, Tuple[int, int, int] | np.ndarray]]
         ] = []
@@ -59,7 +60,7 @@ class Editor(QMainWindow):
         self._color = (255, 0, 0)
         self._reduce_cpu = False
         self._visualize = False
-        self._crop_coords: Optional[Tuple[int, int, int, int]] = None
+        self._preserve_gray_scale = False
         self._ui_locked = False
 
         self._scroll_area = QScrollArea()
@@ -93,6 +94,7 @@ class Editor(QMainWindow):
         self._undo_btn = QAction("Undo", self)
         self._fill_btn = QAction("Fill", self)
         self._draw_btn = QAction("Draw", self)
+        self._preserve_gray_scale_btn = QAction("Preserve graysclae", self)
         self._cpu_btn = QAction(" Reduce Cpu Usage", self)
         self._vis_btn = QAction(" Visualize", self)
 
@@ -100,8 +102,10 @@ class Editor(QMainWindow):
         self._draw_btn.setCheckable(True)
         self._cpu_btn.setCheckable(True)
         self._vis_btn.setCheckable(True)
+        self._preserve_gray_scale_btn.setCheckable(True)
 
         self._fill_btn.setChecked(True)
+        self._preserve_gray_scale_btn.setChecked(False)
         self._cpu_btn.setChecked(self._reduce_cpu)
         self._vis_btn.setChecked(self._visualize)
 
@@ -113,6 +117,7 @@ class Editor(QMainWindow):
         self._draw_btn.triggered.connect(lambda: self.set_mode(Modes.draw))
         self._cpu_btn.triggered.connect(self.toggle_cpu)
         self._vis_btn.triggered.connect(self.toggle_vis)
+        self._preserve_gray_scale_btn.triggered.connect(self.toggle_pres_grayscale)
 
         self.main_toolbar.addActions(
             [
@@ -145,6 +150,8 @@ class Editor(QMainWindow):
 
         self.main_toolbar.addSeparator()
         self.main_toolbar.addAction(self._vis_btn)
+        self.main_toolbar.addSeparator()
+        self.main_toolbar.addAction(self._preserve_gray_scale_btn)
 
         self._crop_btn = QAction("Crop", self)
         self.main_toolbar.addSeparator()
@@ -202,6 +209,17 @@ class Editor(QMainWindow):
                     self._cv_img = self._cv_img[y1:y2, x1:x2].copy()
                     self._history.clear()
                     self._his_indecies.clear()
+
+    def toggle_pres_grayscale(self, _):
+        t = not self._preserve_gray_scale
+        self._preserve_gray_scale_btn.setChecked(t)
+        self._preserve_gray_scale = t
+        self._tolerance_spin.setValue(0)
+        if t:
+            max = 255
+        else:
+            max = 411
+        self._tolerance_spin.setRange(0, max)
 
     def toggle_cpu(self, _):
         self._reduce_cpu = not self._reduce_cpu
@@ -298,6 +316,17 @@ class Editor(QMainWindow):
         t_col = tuple(self._cv_img[y][x])
         if t_col == self._color:
             return
+        pres_gray = False
+        base_gray = self._cv_img[y, x, 0]
+        # print(base_gray)
+        # print(self._cv_img[y, x])
+        if (
+            self._preserve_gray_scale
+            and base_gray != 0
+            and np.all(self._cv_img[y, x] == base_gray)
+        ):
+            pres_gray = True
+
         self.toggle_lock_ui()
         h, w, _ = self._cv_img.shape
         self._history.append([])
@@ -321,7 +350,13 @@ class Editor(QMainWindow):
             cy, cx = stack.pop()
 
             his.append((cy, cx, tuple(self._cv_img[cy, cx])))
-            self._cv_img[cy][cx] = self._color
+            if pres_gray:
+                ratio = self._cv_img[cy, cx, 0] / base_gray
+                # print(f"ratio for {self._cv_img[cy, cx]} and {base_gray} is {ratio}")
+                self._cv_img[cy, cx] = self.handle_pres_grayscale(self._color, ratio)
+
+            else:
+                self._cv_img[cy][cx] = self._color
 
             if self._visualize:
                 count += 1
@@ -338,16 +373,35 @@ class Editor(QMainWindow):
                         if self._tolerance_spin.value() == 0:
                             if tuple(self._cv_img[ny][nx]) == t_col:
                                 match = True
+
                         else:
-                            p_col_arr = self._cv_img[ny][nx].astype(np.int32)
-                            dist_seq = np.sum((p_col_arr - t_col_ar) ** 2)
-                            if dist_seq <= tolerance_seq:
-                                match = True
+                            if pres_gray:
+                                col = self._cv_img[ny, nx]
+                                current_col = self._cv_img[ny, nx, 0]
+                                if (
+                                    np.all(col == current_col)
+                                    and np.abs(int(base_gray) - int(current_col))
+                                    <= self._tolerance_spin.value()
+                                ):
+                                    match = True
+                            else:
+                                p_col_arr = self._cv_img[ny][nx].astype(np.int32)
+                                dist_seq = np.sum((p_col_arr - t_col_ar) ** 2)
+                                if dist_seq <= tolerance_seq:
+                                    match = True
                         if match:
                             stack.append((ny, nx))
                             c_ind[ny, nx] = True
 
         self.toggle_lock_ui()
+
+    def handle_pres_grayscale(
+        self, color: tuple[int, int, int], gray_level_ratio: float
+    ):
+        R = min(255, int(color[0] * gray_level_ratio))
+        G = min(255, int(color[1] * gray_level_ratio))
+        B = min(255, int(color[2] * gray_level_ratio))
+        return (R, G, B)
 
     def undo(self, _):
         if self._cv_img is None or not self._history:
